@@ -1,7 +1,7 @@
 # Inspecter un échantillon des datasets candidats
 
 Type: task
-Status: claimed
+Status: resolved
 Blocked by: 01
 
 ## Question
@@ -20,3 +20,11 @@ Le but est de juger si le dataset convient avant de le choisir. C'est une tâche
 - Contenu : les deux classes montrent les mêmes sujets ImageNet (poissons, oiseaux, requins, éléphants…), donc le contenu ne trahit pas la classe.
 - Format : tout est en JPEG (qualité 96 selon la fiche), le biais de format est traité.
 - **Biais de taille restant probable** : les réelles font 450–550 px, mais les générateurs gardent leur taille native (BigGAN 128 px ; ADM, GLIDE, VQDM 256 px ; SD et Wukong 512 px ; Midjourney 1024 px). À vérifier sur fichiers, et à traiter dans le ticket prétraitement (crop, ou ne garder que les générateurs proches de 512 px).
+
+## Answer
+
+L'utilisateur a regardé l'échantillon et juge `unbiased-tiny-genimage` satisfaisant (« ce dataset a l'air bien »). Faits à reporter dans les tickets suivants :
+- 5 828 images réelles ; 7 générateurs à 2 500 images chacun ; tout en JPEG ;
+- pas de split train/test fourni ;
+- déséquilibre d'environ 3 pour 1 ;
+- biais de taille probable entre générateurs (de 128 à 1024 px).
