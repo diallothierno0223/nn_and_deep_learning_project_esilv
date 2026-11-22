@@ -29,6 +29,8 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 
 ## Decisions so far
 
+- [Existe-t-il un dataset débiaisé au contenu plus varié que GenImage ?](issues/09-dataset-plus-varie.md) : non, rien de prêt à l'emploi. On garde unbiased-tiny-genimage pour l'entraînement ; Extended Synthbuster (photos RAISE variées contre FLUX et SD 3.5, 5,2 Go sur Kaggle) est le candidat comme jeu de test complémentaire.
+
 - [Quels backbones CNN Keras conviennent, et combien coûte leur fine-tuning ?](issues/03-backbones-keras.md) : candidats ResNet50, EfficientNet(V2)B0 et ConvNeXtTiny. Une epoch de 100k images prend environ 5 à 10 min sur un T4 (estimation). Kaggle offre 30 h GPU/semaine. Le prétraitement compte plus que le choix du backbone.
 
 - [Quels datasets image réelle vs image générée existent ?](issues/01-datasets-candidats.md) : GenImage (8 générateurs, ~500 Go) via un miroir Kaggle réduit, de préférence la version déjà débiaisée unbiased-tiny-genimage (2,5 Go). Synthbuster peut servir de test hors distribution ; les autres datasets sont trop gros ou difficiles d'accès.
