@@ -17,6 +17,12 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 - Prétraitement acté dans le principe : toutes les images à la même taille, seulement les pixels (aucune extension ni métadonnée exploitable).
 - Grad-CAM : à faire, en bonus.
 - Pas de code ni d'entraînement avant d'avoir atteint la destination : on économise le calcul.
+- Rédaction du notebook (préférence permanente) :
+  1. Le notebook s'exécute tel quel sur Colab ou Kaggle, de haut en bas, sans manipulation manuelle.
+  2. Ordre fixe en tête : d'abord toutes les installations de packages, puis tous les imports, puis tous les téléchargements (dataset, poids…).
+  3. Chaque section de code est précédée d'une cellule markdown avec un titre (ex. « Mise en place », « Entraînement »…).
+  4. Chaque fonction a une docstring.
+  5. Les lignes longues ou peu évidentes sont commentées.
 - Skills à consulter : grilling + domain-modeling pour les tickets de discussion ; research pour les tickets de recherche.
 - Équipe et échéance : à compléter plus tard.
 
@@ -27,7 +33,7 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 - Grad-CAM : sur quel(s) modèle(s), quelles couches, combien d'exemples montrer, et comment les présenter à l'oral.
 - Data augmentation : laquelle est sûre pour cette tâche (certaines transformations peuvent effacer les traces de génération, ou en créer).
 - Budget d'hyperparamètres : combien d'essais le calcul Kaggle/Colab permet, et lesquels.
-- Structure du notebook : sections, ordre, ce qui est exécuté et ce qui est chargé depuis des poids sauvegardés.
+- Structure du notebook : la liste des sections après le bloc installations / imports / téléchargements (les conventions de rédaction sont dans les Notes), et ce qui est ré-entraîné ou chargé depuis des poids sauvegardés.
 - Plan des slides et de l'oral : quelle histoire raconter, quels résultats mettre en avant.
 - Équipe et échéance.
 
