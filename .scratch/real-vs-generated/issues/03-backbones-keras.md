@@ -14,3 +14,7 @@ Pour chaque backbone retenu, donner :
 - une estimation du temps par epoch et de la mémoire GPU pour un fine-tuning sur un GPU Kaggle (P100 / T4) ou Colab (T4), avec un dataset de 10k à 100k images.
 
 Rappeler aussi les quotas et limites actuels de Kaggle et Colab : heures GPU par semaine, durée maximale d'une session, disque.
+
+## Recherche
+
+En cours : les résultats arrivent sur la branche jetable `research/03-backbones-keras`, dans le fichier `research/03-backbones-keras.md` (jamais mergée).

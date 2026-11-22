@@ -17,3 +17,7 @@ Pour chaque candidat, relever :
 - la facilité d'accès depuis Kaggle/Colab (dataset Kaggle existant ? sous-ensemble téléchargeable ?).
 
 Indiquer quel sous-ensemble raisonnable tiendrait dans les limites de disque et de temps de Kaggle/Colab.
+
+## Recherche
+
+En cours : les résultats arrivent sur la branche jetable `research/01-datasets-candidats`, dans le fichier `research/01-datasets-candidats.md` (jamais mergée).
