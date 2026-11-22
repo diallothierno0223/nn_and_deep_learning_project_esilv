@@ -20,7 +20,7 @@ Indiquer quel sous-ensemble raisonnable tiendrait dans les limites de disque et 
 
 ## Recherche
 
-Rédaction complète (131 lignes, sources citées) : pas encore poussée sur `research/01-datasets-candidats`, l agent ayant été bloqué par la protection d écriture entre worktrees. Copie provisoire dans le scratchpad de la session.
+Rédaction complète (131 lignes, sources citées) : pas encore poussée sur `research/01-datasets-candidats`, l'agent ayant été bloqué par la protection d'écriture entre worktrees. Copie provisoire dans le scratchpad de la session.
 
 ## Answer
 
