@@ -1,7 +1,7 @@
 # Quel dataset et quel sous-ensemble ? Quels générateurs mettre de côté ?
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 01, 02, 03, 04, 09
 
 ## Question
