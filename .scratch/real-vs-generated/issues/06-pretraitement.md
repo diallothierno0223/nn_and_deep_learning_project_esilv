@@ -1,7 +1,7 @@
 # Quel prétraitement exact ?
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 02, 05
 
 ## Question
