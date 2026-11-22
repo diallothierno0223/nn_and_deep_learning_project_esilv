@@ -29,6 +29,9 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 
 ## Decisions so far
 
+- [Quels backbones et quelle stratégie de fine-tuning ?](issues/07-backbones-finetuning.md) : ResNet50 seul. Tête GAP → Dropout 0,3 → sigmoïde. Phase 1 avec le backbone gelé (lr 1e-3), puis phase 2 avec dégel de `conv5` (lr 1e-5) et arrêt anticipé.
+- [Quel protocole d'évaluation ?](issues/08-protocole-evaluation.md) : split 70/15/15 stratifié, avec accuracy, F1, AUC, matrice de confusion et scores par générateur. Test des générateurs mis de côté face aux images réelles du test, et tableau comparant les deux expériences.
+
 - [Quel prétraitement exact ?](issues/06-pretraitement.md) : crop de 128 px à taille native (aléatoire en entraînement, centré en évaluation), agrandi ×1,75 en 224 px pour toutes les images, puis `resnet50.preprocess_input`. Pas de recompression. Contrôles : scores par générateur et test de perturbation.
 
 - [Quel dataset et quel sous-ensemble ? Quels générateurs mettre de côté ?](issues/05-choix-dataset.md) : unbiased-tiny-genimage, avec deux expériences sur le même modèle. L'expérience « tous générateurs » utilise les 7 générateurs (~833 images chacun). L'expérience « générateurs mis de côté » entraîne sur 5 générateurs (~1 165 images chacun) et teste sur Midjourney et BigGAN. Les deux sont équilibrées face aux 5 828 images réelles.
