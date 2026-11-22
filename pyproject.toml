@@ -1,0 +1,19 @@
+[project]
+name = "nn-and-deep-learning-project-esilv"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Thierno DIALLO", email = "thiernosaliou0223@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=3.1.1",
+]
+
+[project.scripts]
+nn-and-deep-learning-project-esilv = "nn_and_deep_learning_project_esilv:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
