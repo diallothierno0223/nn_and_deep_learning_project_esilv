@@ -1,7 +1,7 @@
 # Quels biais de format piègent ces datasets, et quel prétraitement les neutralise ?
 
 Type: research
-Status: open
+Status: resolved
 Blocked by: —
 
 ## Question
@@ -12,4 +12,14 @@ Le principe déjà acté (même taille pour toutes les images, uniquement les pi
 
 ## Recherche
 
-En cours : les résultats arrivent sur la branche jetable `research/02-biais-de-format`, dans le fichier `research/02-biais-de-format.md` (jamais mergée).
+Résultats sur la branche jetable `research/02-biais-de-format`, dans le fichier `research/02-biais-de-format.md` (jamais mergée).
+
+## Answer
+
+Oui, GenImage est piégé, et « même taille + pixels seuls » ne suffit pas. Les images réelles sont des JPEG ImageNet (qualité ~96, tailles variables, ~450 px) ; les images générées sont des PNG non compressés, à taille fixe par générateur. Un ResNet50 apprend « JPEG = réel » et « taille ≈ celle du générateur = généré ». Les traces de compression survivent dans les pixels décodés, et un resize commun crée un nouveau biais (facteurs d'échelle différents par classe). Retirer ces biais fait gagner ~11 points en généralisation cross-générateur.
+
+Prétraitement recommandé : réenregistrer les images générées en JPEG qualité 96 ; ne garder que des générateurs d'une même taille (ex. le trio 512 px SD1.4 / SD1.5 / Wukong) et des images réelles entre 450 et 550 px ; crop au lieu de resize ; augmentation flou + JPEG aléatoire sur les deux classes. Contrôles après coup : protocole BIAS-ID, test PNG vs JPEG sur des photos réelles non compressées, petit classifieur « trivial » sur les seules caractéristiques de format et de taille (suggestion non issue d'un article).
+
+Points non vérifiés : survie mesurée des traces JPEG après resize, biais EXIF ou de ratio, risque de double compression.
+
+Détail et sources : branche `research/02-biais-de-format`, fichier `research/02-biais-de-format.md` (commit 838230b).
