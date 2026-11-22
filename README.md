@@ -160,6 +160,11 @@ Sur le modèle de l'expérience « générateurs mis de côté », couche `conv5
 4. Chaque fonction a une **docstring**.
 5. Les lignes longues ou peu évidentes sont **commentées**.
 
+### Gestion des paquets
+
+- **En local**, les paquets s'installent avec **uv** (`uv add <paquet>`), dans l'environnement `.venv` à la racine du projet. Chaque dépendance est ainsi tracée dans `pyproject.toml` et `uv.lock`. Pas de `pip install` direct.
+- **Sur Colab ou Kaggle**, l'environnement local n'existe pas. La première cellule du notebook installe donc elle-même ce qui manque, pour que le notebook reste exécutable tel quel. Les mêmes paquets doivent aussi figurer dans `pyproject.toml`.
+
 ### Sections
 
 1. Installation des packages
