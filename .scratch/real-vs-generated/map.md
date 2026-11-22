@@ -28,6 +28,8 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 
 ## Decisions so far
 
+- [Quels backbones CNN Keras conviennent, et combien coûte leur fine-tuning ?](issues/03-backbones-keras.md) : candidats ResNet50, EfficientNet(V2)B0 et ConvNeXtTiny. Une epoch de 100k images prend environ 5 à 10 min sur un T4 (estimation). Kaggle offre 30 h GPU/semaine. Le prétraitement compte plus que le choix du backbone.
+
 - [Quels datasets image réelle vs image générée existent ?](issues/01-datasets-candidats.md) : GenImage (8 générateurs, ~500 Go) via un miroir Kaggle réduit, de préférence la version déjà débiaisée unbiased-tiny-genimage (2,5 Go). Synthbuster peut servir de test hors distribution ; les autres datasets sont trop gros ou difficiles d'accès.
 
 - [Quels biais de format piègent ces datasets, et quel prétraitement les neutralise ?](issues/02-biais-de-format.md) : GenImage oppose des JPEG réels à des PNG générés de taille fixe. Il faut recompresser les images générées en JPEG, aligner les tailles, cropper plutôt que resizer, puis vérifier qu'aucun raccourci ne subsiste.
