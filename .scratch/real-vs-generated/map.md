@@ -29,6 +29,8 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 
 ## Decisions so far
 
+- [Quel prétraitement exact ?](issues/06-pretraitement.md) : crop de 128 px à taille native (aléatoire en entraînement, centré en évaluation), agrandi ×1,75 en 224 px pour toutes les images, puis `resnet50.preprocess_input`. Pas de recompression. Contrôles : scores par générateur et test de perturbation.
+
 - [Quel dataset et quel sous-ensemble ? Quels générateurs mettre de côté ?](issues/05-choix-dataset.md) : unbiased-tiny-genimage, avec deux expériences sur le même modèle. L'expérience « tous générateurs » utilise les 7 générateurs (~833 images chacun). L'expérience « générateurs mis de côté » entraîne sur 5 générateurs (~1 165 images chacun) et teste sur Midjourney et BigGAN. Les deux sont équilibrées face aux 5 828 images réelles.
 
 - [Inspecter un échantillon des datasets candidats](issues/04-inspecter-echantillon.md) : unbiased-tiny-genimage est validé à l'œil (5 828 réelles, 7 × 2 500 générées, tout en JPEG, pas de split fourni) ; un biais de taille entre générateurs reste à traiter.
