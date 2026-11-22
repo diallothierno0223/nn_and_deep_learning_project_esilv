@@ -23,12 +23,13 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
   3. Chaque section de code est précédée d'une cellule markdown avec un titre (ex. « Mise en place », « Entraînement »…).
   4. Chaque fonction a une docstring.
   5. Les lignes longues ou peu évidentes sont commentées.
-- Choix annoncés par l'utilisateur (2026-11-23), à confirmer dans leurs tickets : dataset `cartografia/unbiased-tiny-genimage` (2,5 Go, déjà débiaisé) ; backbone ResNet50. Le calcul gratuit (Colab/Kaggle) est jugé suffisant.
+- Destination atteinte le 2026-11-23 : le document de cadrage est [docs/cadrage.md](../../docs/cadrage.md).
 - Skills à consulter : grilling + domain-modeling pour les tickets de discussion ; research pour les tickets de recherche.
 - Équipe et échéance : à compléter plus tard.
 
 ## Decisions so far
 
+- [Augmentation, Grad-CAM, hyperparamètres, notebook et oral : quels choix ?](issues/10-brouillard-restant.md) : pas d'augmentation au-delà du crop aléatoire, pas de recherche d'hyperparamètres (2 entraînements en tout). Grad-CAM sur `conv5_block3_out` avec ~8 exemples. Notebook en 12 sections, fil conducteur de l'oral fixé.
 - [Quels backbones et quelle stratégie de fine-tuning ?](issues/07-backbones-finetuning.md) : ResNet50 seul. Tête GAP → Dropout 0,3 → sigmoïde. Phase 1 avec le backbone gelé (lr 1e-3), puis phase 2 avec dégel de `conv5` (lr 1e-5) et arrêt anticipé.
 - [Quel protocole d'évaluation ?](issues/08-protocole-evaluation.md) : split 70/15/15 stratifié, avec accuracy, F1, AUC, matrice de confusion et scores par générateur. Test des générateurs mis de côté face aux images réelles du test, et tableau comparant les deux expériences.
 
@@ -48,12 +49,7 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
 
 ## Not yet specified
 
-- Grad-CAM : sur quel(s) modèle(s), quelles couches, combien d'exemples montrer, et comment les présenter à l'oral.
-- Data augmentation : laquelle est sûre pour cette tâche (certaines transformations peuvent effacer les traces de génération, ou en créer).
-- Budget d'hyperparamètres : combien d'essais le calcul Kaggle/Colab permet, et lesquels.
-- Structure du notebook : la liste des sections après le bloc installations / imports / téléchargements (les conventions de rédaction sont dans les Notes), et ce qui est ré-entraîné ou chargé depuis des poids sauvegardés.
-- Plan des slides et de l'oral : quelle histoire raconter, quels résultats mettre en avant.
-- Équipe et échéance.
+- Équipe et échéance : à compléter par l'utilisateur ; ne bloque aucune décision.
 
 ## Out of scope
 
