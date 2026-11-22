@@ -23,6 +23,7 @@ Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ens
   3. Chaque section de code est précédée d'une cellule markdown avec un titre (ex. « Mise en place », « Entraînement »…).
   4. Chaque fonction a une docstring.
   5. Les lignes longues ou peu évidentes sont commentées.
+- Choix annoncés par l'utilisateur (2026-11-23), à confirmer dans leurs tickets : dataset `cartografia/unbiased-tiny-genimage` (2,5 Go, déjà débiaisé) ; backbone ResNet50. Le calcul gratuit (Colab/Kaggle) est jugé suffisant.
 - Skills à consulter : grilling + domain-modeling pour les tickets de discussion ; research pour les tickets de recherche.
 - Équipe et échéance : à compléter plus tard.
 
