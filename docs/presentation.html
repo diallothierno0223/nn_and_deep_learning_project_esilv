@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image réelle ou générée ?</title>
+<style>
+:root {
+  --bg: #0f1420;
+  --slide: #ffffff;
+  --ink: #1b2230;
+  --muted: #5d6676;
+  --line: #e3e6ec;
+  --soft: #f5f6f9;
+  --orange: #e8893a;
+  --orange-soft: #fdf0e4;
+  --blue: #3d6fd8;
+  --blue-soft: #e8effc;
+  --green: #3e9b52;
+  --green-soft: #e6f4e9;
+  --red: #c8443b;
+  --red-soft: #fbe9e7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); overflow: hidden; }
+body { font-family: "Segoe UI", Inter, system-ui, -apple-system, sans-serif; color: var(--ink); }
+
+#stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: center center; }
+.slide {
+  position: absolute; inset: 0; background: var(--slide); border-radius: 6px;
+  padding: 52px 64px 48px; display: none; flex-direction: column; overflow: hidden;
+}
+.slide.active { display: flex; }
+.slide::after { /* barre d'accent */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--blue);
+}
+.kicker { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); margin-bottom: 6px; }
+h1 { font-size: 40px; line-height: 1.15; font-weight: 700; margin-bottom: 22px; }
+h2 { font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+p, li { font-size: 19px; line-height: 1.45; }
+ul { padding-left: 22px; }
+li { margin-bottom: 6px; }
+li::marker { color: var(--blue); }
+b { font-weight: 700; }
+code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .9em; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+.muted { color: var(--muted); }
+.small { font-size: 15px; }
+.foot { position: absolute; left: 64px; right: 64px; bottom: 18px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+.cols { display: grid; gap: 28px; flex: 1; min-height: 0; }
+.c2 { grid-template-columns: 1fr 1fr; }
+.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.c-6-4 { grid-template-columns: 1.5fr 1fr; }
+.card { background: var(--soft); border-radius: 10px; padding: 18px 22px; }
+.card.orange { background: var(--orange-soft); border-left: 5px solid var(--orange); }
+.card.blue { background: var(--blue-soft); border-left: 5px solid var(--blue); }
+.card.green { background: var(--green-soft); border-left: 5px solid var(--green); }
+.card.red { background: var(--red-soft); border-left: 5px solid var(--red); }
+.card p, .card li { font-size: 17px; }
+.card h2 { font-size: 19px; }
+
+.trap { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: stretch; gap: 0; margin-bottom: 14px; }
+.trap .arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); }
+
+table { border-collapse: collapse; width: 100%; font-size: 16.5px; }
+th { background: var(--ink); color: #fff; font-weight: 600; text-align: left; padding: 8px 12px; }
+td { padding: 7px 12px; border-bottom: 1px solid var(--line); }
+tr:nth-child(even) td { background: #fafbfc; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.hl { font-weight: 700; color: var(--blue); }
+.bad { font-weight: 700; color: var(--red); }
+.good { font-weight: 700; color: var(--green); }
+
+.big { display: flex; gap: 18px; margin-bottom: 18px; }
+.stat { flex: 1; background: var(--soft); border-radius: 10px; padding: 16px 20px; }
+.stat .v { font-size: 42px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 15px; color: var(--muted); margin-top: 6px; }
+.stat.blue .v { color: var(--blue); } .stat.red .v { color: var(--red); } .stat.green .v { color: var(--green); } .stat.orange .v { color: var(--orange); }
+
+/* barres horizontales */
+.bars { display: flex; flex-direction: column; gap: 9px; }
+.bar { display: grid; grid-template-columns: 190px 1fr 64px; align-items: center; gap: 12px; font-size: 16px; }
+.bar .track { height: 22px; background: var(--soft); border-radius: 4px; position: relative; overflow: hidden; }
+.bar .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.bar .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.pair .bar { grid-template-columns: 250px 1fr 120px; }
+.pair .track { height: 14px; }
+.pair .track + .track { margin-top: 3px; }
+.legend { display: flex; gap: 22px; font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+
+img.fig { max-width: 100%; height: auto; display: block; }
+.figwrap { display: flex; align-items: center; justify-content: center; }
+
+/* titre */
+.title-slide { justify-content: center; background: linear-gradient(135deg, #16203a 0%, #24365f 100%); color: #fff; }
+.title-slide::after { background: var(--orange); }
+.title-slide h1 { font-size: 58px; margin-bottom: 16px; }
+.title-slide .sub { font-size: 24px; color: #c9d3ea; margin-bottom: 40px; }
+.title-slide .meta { font-size: 17px; color: #9fb0d4; line-height: 1.7; }
+
+/* notes et navigation */
+#notes {
+  position: fixed; left: 0; right: 0; bottom: 0; background: #fffbe6; color: #3b3000; border-top: 3px solid #e3c34a;
+  padding: 14px 24px 18px; font-size: 16px; line-height: 1.5; display: none; max-height: 34vh; overflow: auto; z-index: 10;
+}
+#notes.on { display: block; }
+#notes .t { font-weight: 700; margin-right: 8px; }
+#hud { position: fixed; right: 14px; bottom: 10px; color: #8892a6; font-size: 13px; z-index: 11; user-select: none; }
+#hud button { background: #1f2738; color: #c9d1e0; border: 1px solid #333d52; border-radius: 4px; padding: 3px 9px; margin-left: 4px; cursor: pointer; font: inherit; }
+#progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); z-index: 11; transition: width .2s; }
+.notes { display: none; }
+
+@media print {
+  html, body { overflow: visible; background: #fff; }
+  #stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide { position: relative; display: flex !important; width: 1280px; height: 720px; page-break-after: always; border-radius: 0; }
+  #hud, #notes, #progress { display: none !important; }
+  @page { size: 1280px 720px; margin: 0; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage">
+
+<!-- 1 ─────────────────────────────── -->
+<section class="slide title-slide">
+  <div class="kicker" style="color:#f4b27a">ESILV · Neural Networks &amp; Deep Learning</div>
+  <h1>Image réelle ou image générée ?</h1>
+  <div class="sub">Détecter les images produites par IA avec un CNN et du transfer learning</div>
+  <div class="meta">ResNet50 · TensorFlow / Keras · GPU Kaggle<br>Équipe : Thierno DIALLO (chef d'équipe), Joe VASEEKARAN, Lisandru ZUCCARELLI, Noé PAYAN<br>Rendu le 9 décembre 2026</div>
+  <div class="notes" data-time="0:20">Présentation de l'équipe et du sujet en une phrase : on veut un modèle qui dit si une image est une vraie photo ou une image entièrement générée par IA.</div>
+</section>
+
+<!-- 2 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Le problème</div>
+  <h1>Classer une image, même d'un générateur jamais vu</h1>
+  <div class="cols c2">
+    <div>
+      <ul>
+        <li><b>Tâche</b> : classification binaire, <b>réelle</b> (photo d'appareil) contre <b>générée</b> (GAN, diffusion, Midjourney…).</li>
+        <li><b>Vraie difficulté</b> : les générateurs changent tous les mois. Un détecteur utile doit reconnaître un générateur <b>absent de l'entraînement</b>.</li>
+        <li><b>Contraintes du cours</b> : CNN + transfer learning, TensorFlow / Keras, GPU gratuits (Kaggle T4).</li>
+      </ul>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card blue"><h2>Question 1</h2><p>Quel score quand tous les générateurs sont connus ?</p></div>
+      <div class="card orange"><h2>Question 2</h2><p>Le modèle généralise-t-il à des générateurs <b>jamais vus</b> ?</p></div>
+      <div class="card"><h2>Démarche</h2><p>Tout décider avant de coder, puis itérer : entraînement n° 1 → analyse → entraînement n° 2.</p></div>
+    </div>
+  </div>
+  <div class="notes" data-time="0:40">Insister sur la question 2 : c'est elle qui rend le sujet intéressant. Un détecteur qui ne marche que sur les générateurs qu'il connaît est inutile en pratique.</div>
+</section>
+
+<!-- 3 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Décisions clés · pièges évités</div>
+  <h1>Le danger : un modèle qui apprend un raccourci</h1>
+  <div class="trap">
+    <div class="card red"><h2>Piège 1 · le format</h2><p>Dans GenImage brut, les photos sont en <b>JPEG</b>, les images générées en <b>PNG</b>. Le modèle apprend « JPEG = réel » et non l'IA (Grommelt et al., <i>Fake or JPEG?</i>).</p></div>
+    <div class="arrow">→</div>
+    <div class="card green"><h2>Dataset débiaisé</h2><p><code>unbiased-tiny-genimage</code> : <b>tout en JPEG qualité 96</b>. 5 828 réelles, 7 générateurs × 2 500.</p></div>
+  </div>
+  <div class="trap">
+    <div class="card red"><h2>Piège 2 · la taille</h2><p>BigGAN 128 px, ADM 256 px, SD 512 px, Midjourney 1024 px. Redimensionner différemment selon l'image laisse des <b>traces d'interpolation</b> propres à chaque source.</p></div>
+    <div class="arrow">→</div>
+    <div class="card green"><h2>Même transformation pour tous</h2><p><b>Crop 128 px à résolution native</b>, puis agrandissement ×1,75 identique → 224 px.</p></div>
+  </div>
+  <div class="trap">
+    <div class="card red"><h2>Piège 3 · un score trompeur</h2><p>95 % d'accuracy ne prouve pas que le modèle regarde le bon signal. Classes déséquilibrées = accuracy trompeuse.</p></div>
+    <div class="arrow">→</div>
+    <div class="card green"><h2>Contrôles anti-raccourci</h2><p>Classes <b>50/50</b>, AUC + score <b>par générateur</b>, <b>test de perturbation</b>, Grad-CAM.</p></div>
+  </div>
+  <div class="notes" data-time="1:00">C'est le cœur méthodologique. Le résultat de la littérature : sur GenImage brut, un modèle peut atteindre un score élevé en détectant juste le format. On a choisi le dataset et le prétraitement pour fermer ces portes. Le piège 3 annonce le test de perturbation, qui va justement révéler un autre raccourci.</div>
+</section>
+
+<!-- 4 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Données et protocole</div>
+  <h1>Deux expériences, même modèle</h1>
+  <div class="cols c-6-4">
+    <div>
+      <table>
+        <tr><th></th><th>« tous générateurs »</th><th>« générateurs mis de côté »</th></tr>
+        <tr><td>Générateurs à l'entraînement</td><td>les 7</td><td>5 (sans Midjourney ni BigGAN)</td></tr>
+        <tr><td>Équilibre</td><td colspan="2">50/50 : 5 828 réelles, générées sous-échantillonnées à part égale</td></tr>
+        <tr><td>Split (graine 42)</td><td colspan="2">70 / 15 / 15, stratifié par source → 8 156 / 1 748 / 1 748</td></tr>
+        <tr><td>Test en plus</td><td>—</td><td>2 500 Midjourney + 2 500 BigGAN <b>jamais vus</b></td></tr>
+      </table>
+      <p class="small muted" style="margin-top:14px">Métriques : accuracy, F1, <b>AUC</b>, matrice de confusion, <b>taux de détection par générateur</b>. Seuil 0,5.</p>
+    </div>
+    <div class="card orange">
+      <h2>Pourquoi Midjourney et BigGAN ?</h2>
+      <ul>
+        <li>Les deux <b>tailles extrêmes</b> : 1024 px et 128 px.</li>
+        <li>Deux <b>familles</b> différentes : un GAN ancien et un générateur commercial récent.</li>
+        <li>Le modèle n'apprend alors que sur des modèles de <b>diffusion</b> : le test est exigeant.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notes" data-time="0:40">Le test des générateurs mis de côté contient 5 000 générées pour ~875 réelles : son accuracy est trompeuse, on regarde l'AUC et les taux par générateur.</div>
+</section>
+
+<!-- 5 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Configuration · le réseau</div>
+  <h1>ResNet50 pré-entraîné + tête légère</h1>
+  <div class="figwrap" style="margin-bottom:14px"><img class="fig" style="max-height:320px" src="figures/rapport/architecture_modele.png" alt="Architecture : entrée 224×224×3, ResNet50 conv1 à conv5, Global Average Pooling, Dropout 0,3, Dense(1) sigmoïde"></div>
+  <div class="cols c3" style="gap:18px">
+    <div class="card blue"><h2>Phase 1 · extraction</h2><p>Backbone <b>gelé</b>, seule la tête apprend (2 049 paramètres). Adam, <b>lr 1e-3</b>.</p></div>
+    <div class="card orange"><h2>Phase 2 · fine-tuning</h2><p>Dégel de <code>conv5</code> (~15 M paramètres), <b>lr 1e-5</b> (100× plus faible). BatchNorm <b>figées</b>.</p></div>
+    <div class="card"><h2>Pourquoi ResNet50 ?</h2><p>Backbone de référence en détection (Wang et al. 2020), tient dans le budget GPU. Le protocole compte plus que le backbone.</p></div>
+  </div>
+  <div class="notes" data-time="0:45">Deux phases : d'abord la tête apprend sans abîmer les poids ImageNet avec de gros gradients, puis on adapte le dernier bloc, le plus spécialisé. BatchNorm en mode inférence, sinon ses statistiques seraient recalculées sur nos batches et détruiraient le pré-entraînement. Total 23,6 M paramètres.</div>
+</section>
+
+<!-- 6 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Configuration · prétraitement, hyperparamètres, optimisation</div>
+  <h1>Une chaîne identique pour toutes les images</h1>
+  <div class="figwrap" style="margin-bottom:12px"><img class="fig" style="max-height:225px" src="figures/rapport/pipeline_pretraitement.png" alt="Chaîne : JPEG, décodage mis en cache, augmentation flou + JPEG, crop 128 natif, agrandissement ×1,75, preprocess_input, modèle"></div>
+  <div class="cols c2" style="gap:22px">
+    <table>
+      <tr><th>Hyperparamètre</th><th>Train 1</th><th>Train 2</th></tr>
+      <tr><td>Optimiseur · batch</td><td colspan="2">Adam · 64 · précision mixte float16</td></tr>
+      <tr><td>Epochs max (ph. 1 + ph. 2)</td><td>5 + 10</td><td>10 + 30</td></tr>
+      <tr><td>Arrêt anticipé (patience 4)</td><td>phase 2</td><td>les deux</td></tr>
+      <tr><td>Augmentation</td><td>crop aléatoire</td><td>+ flou + JPEG</td></tr>
+      <tr><td>Évaluation</td><td>1 crop</td><td>1 crop + grille 3×3</td></tr>
+    </table>
+    <div class="card green">
+      <h2>Optimisation du pipeline <code>tf.data</code></h2>
+      <p>Au train 2, le flou et le JPEG aléatoires saturaient le CPU (GPU en attente).</p>
+      <ul class="small" style="margin-top:6px">
+        <li><b>Cache</b> des images décodées en mémoire.</li>
+        <li>Dégradation sur une <b>fenêtre autour du crop</b>, alignée sur la grille JPEG.</li>
+        <li>Vérifié : <b>168 cas, 0 pixel de différence</b>. 23,4 ms → <b>5,4 ms</b> par image.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notes" data-time="0:50">Pas de recherche d'hyperparamètres : le budget GPU permet une exécution par expérience. L'optimisation a été vérifiée pixel par pixel : même résultat, 4× plus rapide.</div>
+</section>
+
+<!-- 7 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Entraînement n° 1 · résultats</div>
+  <h1>95 % d'accuracy, et des générateurs inconnus détectés</h1>
+  <div class="big">
+    <div class="stat blue"><div class="v">0,952</div><div class="l">accuracy « tous générateurs »</div></div>
+    <div class="stat blue"><div class="v">0,990</div><div class="l">AUC « tous générateurs »</div></div>
+    <div class="stat green"><div class="v">94,9 %</div><div class="l">BigGAN détecté, jamais vu</div></div>
+    <div class="stat orange"><div class="v">88,2 %</div><div class="l">Midjourney détecté, jamais vu</div></div>
+  </div>
+  <div class="cols c2">
+    <table>
+      <tr><th>Évaluation</th><th class="num">Acc.</th><th class="num">F1</th><th class="num">AUC</th></tr>
+      <tr><td>« tous » → test</td><td class="num">0,952</td><td class="num">0,952</td><td class="num">0,990</td></tr>
+      <tr><td>« mis de côté » → test</td><td class="num">0,953</td><td class="num">0,953</td><td class="num">0,991</td></tr>
+      <tr><td>« mis de côté » → MJ + BigGAN</td><td class="num">0,922</td><td class="num">0,952</td><td class="num">0,986</td></tr>
+    </table>
+    <ul>
+      <li>Erreurs <b>équilibrées</b> entre les deux classes, <b>pas de surapprentissage</b>.</li>
+      <li>BigGAN (un GAN) reconnu alors que le modèle n'a vu que de la diffusion.</li>
+      <li>Midjourney inconnu : <b>−8 points</b>, c'est le coût du générateur jamais vu.</li>
+      <li>Aucun générateur à 100 % : rien de suspect.</li>
+    </ul>
+  </div>
+  <div class="notes" data-time="0:45">Prudence sur la comparaison avec la littérature (~72 % en cross-générateur sur GenImage) : eux entraînent sur un seul générateur, nous sur cinq. Pas directement comparable.</div>
+</section>
+
+<!-- 8 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Entraînement n° 1 · contrôle anti-raccourci</div>
+  <h1>Mais le test de perturbation révèle un raccourci</h1>
+  <div class="cols c-6-4">
+    <div>
+      <p style="margin-bottom:14px">Même dégradation appliquée aux <b>deux classes</b> du test. Part de <b>vraies photos</b> classées « générée » :</p>
+      <div class="bars">
+        <div class="bar"><span>aucune</span><div class="track"><div class="fill" style="width:5.3%;background:var(--blue)"></div></div><span class="val">5 %</span></div>
+        <div class="bar"><span>JPEG qualité 75</span><div class="track"><div class="fill" style="width:37.9%;background:var(--red)"></div></div><span class="val bad">38 %</span></div>
+        <div class="bar"><span>flou gaussien σ = 1</span><div class="track"><div class="fill" style="width:41.9%;background:var(--red)"></div></div><span class="val bad">42 %</span></div>
+      </div>
+      <p class="small muted" style="margin-top:10px">Expérience « tous générateurs ». « Mis de côté » : 4 % → 38 % et 40 %.</p>
+      <div class="card red" style="margin-top:20px">
+        <h2>Le modèle a appris « net = réel »</h2>
+        <p>Une photo recompressée par WhatsApp ou Instagram serait souvent accusée d'être générée. <b>95 % sur des images propres ne suffit pas.</b></p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card green"><h2>Bonne nouvelle</h2><p>Le raccourci « JPEG = réel » a bien disparu : recompresser pousse vers « générée », pas l'inverse.</p></div>
+      <div class="card"><h2>Grad-CAM confirme</h2><p>Bonnes réponses sur les <b>zones texturées</b>. Les erreurs : des photos réelles avec des zones <b>lisses</b> (plumage blanc, vue aérienne).</p></div>
+      <div class="card blue"><h2>Correction décidée</h2><p>Augmentation <b>flou + JPEG</b> sur les deux classes (Wang 2020), plus d'epochs, grille de crops.</p></div>
+    </div>
+  </div>
+  <div class="notes" data-time="1:00">C'est le moment clé de l'oral : un score élevé ne suffit pas. Le modèle s'appuie sur les détails fins (bruit de capteur, micro-textures). Quand une vraie photo les perd, elle ressemble à ce que le modèle associe à l'IA.</div>
+</section>
+
+<!-- 9 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Entraînement n° 2 · robustesse</div>
+  <h1>Fausses alertes divisées par 3</h1>
+  <div class="legend"><span style="--c:#c8443b">Train 1</span><span style="--c:#3e9b52">Train 2</span><span>Vraies photos classées « générée », expérience « tous générateurs » (plus bas = mieux)</span></div>
+  <div class="bars pair" style="gap:12px">
+    <div class="bar"><span>aucune</span><div><div class="track"><div class="fill" style="width:5.3%;background:var(--red)"></div></div><div class="track"><div class="fill" style="width:4.7%;background:var(--green)"></div></div></div><span class="val">5 → 5 %</span></div>
+    <div class="bar"><span>JPEG 75</span><div><div class="track"><div class="fill" style="width:37.9%;background:var(--red)"></div></div><div class="track"><div class="fill" style="width:15.4%;background:var(--green)"></div></div></div><span class="val good">38 → 15 %</span></div>
+    <div class="bar"><span>flou σ = 1</span><div><div class="track"><div class="fill" style="width:41.9%;background:var(--red)"></div></div><div class="track"><div class="fill" style="width:14.0%;background:var(--green)"></div></div></div><span class="val good">42 → 14 %</span></div>
+    <div class="bar"><span>JPEG 40 <i class="muted">(plus fort)</i></span><div><div class="track"></div><div class="track"><div class="fill" style="width:13.0%;background:var(--green)"></div></div></div><span class="val">13 %</span></div>
+    <div class="bar"><span>réduction ×0,5 <i class="muted">(jamais vue)</i></span><div><div class="track"></div><div class="track"><div class="fill" style="width:20.8%;background:var(--green)"></div></div></div><span class="val">21 %</span></div>
+    <div class="bar"><span>flou σ = 2,5 <i class="muted">(plus fort)</i></span><div><div class="track"></div><div class="track"><div class="fill" style="width:46.8%;background:var(--orange)"></div></div></div><span class="val bad">47 %</span></div>
+  </div>
+  <div class="cols c3" style="gap:18px;margin-top:22px">
+    <div class="card green"><p><b>Augmentation</b> à l'entraînement : flou (p 0,5, σ 0–2) et JPEG (p 0,5, qualité 50–100), deux classes.</p></div>
+    <div class="card green"><p>La détection des images générées <b>ne baisse pas</b> sous perturbation (0,89 à 0,96).</p></div>
+    <div class="card orange"><p><b>Limite</b> : au-delà de σ = 2, le lien « lisse = généré » revient. Il a été repoussé, pas supprimé.</p></div>
+  </div>
+  <div class="notes" data-time="0:55">Le critère de succès fixé après le premier entraînement est atteint. JPEG 40 est plus fort que tout ce qui a été vu à l'entraînement et reste bien géré. Le flou σ = 2,5 dépasse la plage d'augmentation : le modèle ne généralise pas au-delà.</div>
+</section>
+
+<!-- 10 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Entraînement n° 2 · scores</div>
+  <h1>Le prix : environ 2 points sur les images propres</h1>
+  <table style="margin-bottom:18px">
+    <tr><th>Évaluation (acc. / F1 / AUC)</th><th>Train 1</th><th>Train 2 · 1 crop</th><th>Train 2 · grille 3×3</th></tr>
+    <tr><td>« tous » → test</td><td>0,952 / 0,952 / 0,990</td><td>0,929 / 0,927 / 0,981</td><td class="hl">0,945 / 0,943 / 0,987</td></tr>
+    <tr><td>« mis de côté » → test</td><td>0,953 / 0,953 / 0,991</td><td>0,936 / 0,935 / 0,984</td><td class="hl">0,947 / 0,945 / 0,991</td></tr>
+    <tr><td>« mis de côté » → MJ + BigGAN</td><td>0,922 / 0,952 / 0,986</td><td>0,902 / 0,939 / 0,980</td><td>0,799 / 0,867 / 0,982</td></tr>
+  </table>
+  <div class="cols c2" style="gap:22px">
+    <div>
+      <h2>Générateurs jamais vus (taux de détection)</h2>
+      <table>
+        <tr><th></th><th class="num">Train 1</th><th class="num">T2 · 1 crop</th><th class="num">T2 · grille</th></tr>
+        <tr><td>BigGAN</td><td class="num">0,949</td><td class="num">0,938</td><td class="num">0,938</td></tr>
+        <tr><td>Midjourney</td><td class="num">0,882</td><td class="num">0,849</td><td class="num bad">0,596</td></tr>
+      </table>
+      <p class="small muted" style="margin-top:8px">Arrêt anticipé : 10 + 12 et 10 + 14 epochs, loin du maximum de 30.</p>
+    </div>
+    <div class="card orange">
+      <h2>La grille est à double tranchant</h2>
+      <ul>
+        <li>Tests classiques : la grille <b>récupère presque toute la perte</b>, fausses alertes divisées par 2 à 3.</li>
+        <li>Midjourney inconnu : 85 % → <b>60 %</b>, alors que l'<b>AUC reste à 0,98</b>. C'est le <b>seuil</b> qui ne convient plus, pas le classement.</li>
+        <li>Les 8 crops du bord tombent sur des fonds lisses (bokeh) : la <b>moyenne dilue</b> le signal.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notes" data-time="1:00">BigGAN ne change pas avec la grille : ses images font 128 px, les 9 crops sont identiques. Quand Midjourney est vu à l'entraînement, la grille l'améliore légèrement (0,880 → 0,896). Exemple parfait d'un choix d'évaluation qui change la conclusion.</div>
+</section>
+
+<!-- 11 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Discussion</div>
+  <h1>Train 1 contre train 2 : un compromis assumé</h1>
+  <table style="margin-bottom:20px">
+    <tr><th>Critère</th><th class="num">Train 1</th><th class="num">Train 2</th><th>Verdict</th></tr>
+    <tr><td>AUC test « tous » (1 crop / grille)</td><td class="num">0,990</td><td class="num">0,981 / 0,987</td><td>légère baisse, récupérée par la grille</td></tr>
+    <tr><td>BigGAN jamais vu</td><td class="num">0,949</td><td class="num">0,938</td><td>stable</td></tr>
+    <tr><td>Midjourney jamais vu (1 crop)</td><td class="num">0,882</td><td class="num">0,849</td><td>légère baisse</td></tr>
+    <tr><td>Fausses alertes JPEG 75 / flou σ = 1</td><td class="num bad">0,38 / 0,42</td><td class="num good">0,15 / 0,14</td><td class="good">nette amélioration</td></tr>
+    <tr><td>Fausses alertes flou σ = 2,5</td><td class="num">non testé</td><td class="num bad">0,47</td><td>limite restante</td></tr>
+  </table>
+  <div class="cols c2" style="gap:22px">
+    <div class="card blue"><h2>Modèle retenu : le train 2</h2><p>Un peu moins bon sur des images propres, mais il ne prend plus une photo recompressée pour une image IA. C'est lui qu'on utiliserait en vrai.</p></div>
+    <div class="card"><h2>Validité des chiffres</h2><p class="small">~125 images par générateur au test : <b>1 image = 0,8 point</b>. Une seule exécution par expérience. Réelles issues d'ImageNet uniquement.</p></div>
+  </div>
+  <div class="notes" data-time="0:45">Les écarts de 2 à 3 points sur un seul générateur relèvent du bruit statistique. Le train 1 reste utile : il montre pourquoi l'augmentation était nécessaire.</div>
+</section>
+
+<!-- 12 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Limites et améliorations</div>
+  <h1>Ce qui reste à faire</h1>
+  <div class="cols c3">
+    <div class="card red">
+      <h2>Limites</h2>
+      <ul>
+        <li>Flou fort (σ = 2,5) : ~50 % de fausses alertes.</li>
+        <li>Surfaces lisses manufacturées prises pour de l'IA.</li>
+        <li>Un crop de 128 px voit <b>1/64</b> d'une image de 1024 px.</li>
+        <li>Réelles : ImageNet seulement, peu varié.</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h2>Sans réentraîner</h2>
+      <ul>
+        <li>Agréger la grille par le <b>maximum</b> (ou top-3) plutôt que la moyenne.</li>
+        <li><b>Seuil choisi sur la validation</b> : l'AUC de 0,98 montre qu'un meilleur seuil existe.</li>
+        <li>AUC <b>par générateur</b> inconnu.</li>
+      </ul>
+    </div>
+    <div class="card blue">
+      <h2>Avec réentraînement</h2>
+      <ul>
+        <li>Flou jusqu'à σ = 3, réduction-agrandissement en augmentation.</li>
+        <li>Autres backbones (EfficientNet, ConvNeXt).</li>
+        <li>Test sur un jeu plus varié (photos de téléphone, réseaux sociaux).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notes" data-time="0:40">La robustesse vient de l'augmentation : elle ne s'étend pas d'elle-même au-delà de ce qu'on a montré au modèle. Les pistes sans réentraînement sont gratuites et visent directement le problème Midjourney.</div>
+</section>
+
+<!-- 13 ─────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Conclusion</div>
+  <h1>Ce qu'on retient</h1>
+  <div style="display:flex;flex-direction:column;justify-content:center;gap:22px;flex:1;padding-bottom:30px">
+    <div class="card blue"><h2>1 · Un détecteur qui généralise</h2><p>ResNet50 + transfer learning : <b>AUC 0,98–0,99</b>, et des générateurs jamais vus détectés (<b>94 %</b> BigGAN, <b>85 %</b> Midjourney).</p></div>
+    <div class="card orange"><h2>2 · Les données et le protocole comptent plus que le modèle</h2><p>Dataset débiaisé et crop natif identique ont fermé les raccourcis de format et de taille.</p></div>
+    <div class="card green"><h2>3 · Un bon score ne suffit pas : il faut tester la robustesse</h2><p>Le test de perturbation a révélé « net = réel ». L'augmentation flou + JPEG a <b>divisé les fausses alertes par 3</b> pour ~2 points de score propre.</p></div>
+  </div>
+  <div class="notes" data-time="0:35">Conclure sur le message 3 : c'est la leçon méthodologique du projet.</div>
+</section>
+
+<!-- 14 ─────────────────────────────── -->
+<section class="slide title-slide">
+  <h1>Merci</h1>
+  <div class="sub">Questions ?</div>
+  <div class="meta">Notebook : <code style="background:#2c3e66;color:#fff">notebooks/real_vs_generated2.ipynb</code><br>Rapport complet : <code style="background:#2c3e66;color:#fff">docs/rapport_projet.docx</code></div>
+  <div class="notes" data-time="—">Questions probables : pourquoi pas un ViT/CLIP (hors contraintes), pourquoi 128 px (taille de BigGAN, la plus petite), comparaison avec la littérature (pas le même protocole).</div>
+</section>
+
+</div>
+
+<div id="notes"></div>
+<div id="hud"><span id="count"></span><button id="prev" title="Précédente (←)">‹</button><button id="next" title="Suivante (→)">›</button><button id="ntoggle" title="Notes orateur (N)">Notes</button><button id="fs" title="Plein écran (F)">⛶</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var notes = document.getElementById('notes');
+  var i = 0;
+  try { var h = parseInt(location.hash.slice(1), 10); if (h >= 1 && h <= slides.length) i = h - 1; } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720) * 0.96;
+    stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === i); });
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    document.getElementById('progress').style.width = ((i + 1) / slides.length * 100) + '%';
+    var nt = slides[i].querySelector('.notes');
+    notes.innerHTML = nt ? '<span class="t">≈ ' + (nt.dataset.time || '') + '</span>' + nt.innerHTML : '';
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+  document.addEventListener('keydown', function (e) {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].indexOf(e.key) >= 0) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].indexOf(e.key) >= 0) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') notes.classList.toggle('on');
+    else if (e.key === 'f' || e.key === 'F') toggleFs();
+  });
+  function toggleFs() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    else document.exitFullscreen && document.exitFullscreen();
+  }
+  document.getElementById('prev').onclick = function () { show(i - 1); };
+  document.getElementById('next').onclick = function () { show(i + 1); };
+  document.getElementById('ntoggle').onclick = function () { notes.classList.toggle('on'); };
+  document.getElementById('fs').onclick = toggleFs;
+  stage.addEventListener('click', function (e) { if (e.clientX > window.innerWidth / 2) show(i + 1); else show(i - 1); });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () {
+    var h = parseInt(location.hash.slice(1), 10);
+    if (h >= 1 && h <= slides.length && h - 1 !== i) show(h - 1);
+  });
+  fit(); show(i);
+})();
+</script>
+</body>
+</html>
