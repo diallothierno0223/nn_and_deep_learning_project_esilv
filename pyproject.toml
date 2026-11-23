@@ -8,7 +8,11 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "kagglehub>=1.0.3",
+    "matplotlib>=3.11.2",
     "pandas>=3.1.1",
+    "scikit-learn>=1.9.1",
+    "tensorflow>=2.21.0",
 ]
 
 [project.scripts]
@@ -17,3 +21,8 @@ nn-and-deep-learning-project-esilv = "nn_and_deep_learning_project_esilv:main"
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+]

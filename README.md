@@ -165,6 +165,16 @@ Sur le modèle de l'expérience « générateurs mis de côté », couche `conv5
 - **En local**, les paquets s'installent avec **uv** (`uv add <paquet>`), dans l'environnement `.venv` à la racine du projet. Chaque dépendance est ainsi tracée dans `pyproject.toml` et `uv.lock`. Pas de `pip install` direct.
 - **Sur Colab ou Kaggle**, l'environnement local n'existe pas. La première cellule du notebook installe donc elle-même ce qui manque, pour que le notebook reste exécutable tel quel. Les mêmes paquets doivent aussi figurer dans `pyproject.toml`.
 
+### Lancer le notebook
+
+Le notebook est [notebooks/real_vs_generated.ipynb](notebooks/real_vs_generated.ipynb).
+
+- **Sur Colab** : activer un GPU (Exécution → Modifier le type d'exécution), puis tout exécuter. Le dataset se télécharge avec `kagglehub`.
+- **Sur Kaggle** : ajouter le dataset `cartografia/unbiased-tiny-genimage` au notebook (« Add Input »), activer un GPU, puis tout exécuter.
+- **Test rapide** : avec la variable d'environnement `SMOKE_TEST=1` (ou `SMOKE_TEST = True` dans la section 3), le notebook tourne en version miniature : 60 images par dossier, 1 epoch par phase, sans poids pré-entraînés. Ce mode sert uniquement à vérifier que tout s'exécute.
+- Les modèles entraînés et leurs historiques sont sauvegardés dans `outputs/`. Si un modèle y existe déjà, il est rechargé au lieu d'être réentraîné.
+- En local sous Windows, TensorFlow n'utilise pas le GPU (il faut WSL2). Les vrais entraînements se font donc sur Colab ou Kaggle.
+
 ### Sections
 
 1. Installation des packages
@@ -208,7 +218,7 @@ Le détail des slides se fera une fois les résultats obtenus.
 
 ## 7. Reste à faire
 
-- [ ] Écrire le notebook à partir de ce cadrage.
+- [x] Écrire le notebook : [notebooks/real_vs_generated.ipynb](notebooks/real_vs_generated.ipynb) (testé de bout en bout en mode miniature, pas encore entraîné pour de vrai).
 - [ ] Lancer les 2 entraînements sur Colab ou Kaggle.
 - [ ] Préparer les slides à partir des résultats.
 - [ ] Compléter l'équipe et l'échéance.
