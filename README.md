@@ -126,6 +126,11 @@ On ne recompresse rien de façon systématique : le dataset est déjà tout en J
 
 - **Split** : 70 / 15 / 15 (train / validation / test), stratifié par classe et par générateur.
 - **Métriques** : accuracy, F1, AUC ROC, matrice de confusion, taux de détection par générateur. Seuil de décision : 0,5.
+- **Évaluation multi-crops (ajoutée pour l'entraînement n° 2)** : chaque image de test est aussi évaluée sur une grille de 3 × 3 crops de 128 px, à résolution native. La prédiction est la moyenne des 9 probabilités.
+  - Pourquoi : un seul crop ne voit que 1,6 % d'une image Midjourney (1024 px) et peut tomber sur une zone vide. La grille en voit 14 %.
+  - La procédure est la même pour toutes les images, donc pas de biais de taille.
+  - Les résultats sont donnés côte à côte : 1 crop centré et grille 3 × 3.
+  - Le test de perturbation et Grad-CAM restent sur 1 crop, pour rester comparables avec l'entraînement n° 1.
 - **Test sur générateurs mis de côté** : les 2 500 Midjourney et les 2 500 BigGAN, face aux images réelles du jeu de test (~875). On donne le taux de détection de chaque générateur et l'AUC.
 - **Tableau final** :
 
