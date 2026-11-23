@@ -177,7 +177,8 @@ Sur le modèle de l'expérience « générateurs mis de côté », couche `conv5
 
 Le notebook est [notebooks/real_vs_generated.ipynb](notebooks/real_vs_generated.ipynb).
 
-- **Sur Colab** : activer un GPU (Exécution → Modifier le type d'exécution), puis tout exécuter. Le dataset se télécharge avec `kagglehub`.
+- **Sur Colab** : activer un GPU (Exécution → Modifier le type d'exécution), puis tout exécuter. Le dataset se télécharge avec `kagglehub`. Sur Colab gratuit (~12 Go de RAM), mettre `CACHE_DECODED_IMAGES = False` dans la section 4.
+- **Vitesse** : le goulot d'étranglement est le CPU, pas le GPU. Le notebook garde donc les images décodées en mémoire (~15 Go) et n'applique le flou et le JPEG qu'à une fenêtre autour du crop. Ces deux optimisations donnent exactement les mêmes pixels que la version lente (vérifié pixel par pixel).
 - **Sur Kaggle** : ajouter le dataset `cartografia/unbiased-tiny-genimage` au notebook (« Add Input »), activer un GPU, puis tout exécuter.
 - **Test rapide** : avec la variable d'environnement `SMOKE_TEST=1` (ou `SMOKE_TEST = True` dans la section 3), le notebook tourne en version miniature : 60 images par dossier, 1 epoch par phase, sans poids pré-entraînés. Ce mode sert uniquement à vérifier que tout s'exécute.
 - Les modèles entraînés et leurs historiques sont sauvegardés dans `outputs/`. Si un modèle y existe déjà, il est rechargé au lieu d'être réentraîné.
