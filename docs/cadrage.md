@@ -51,14 +51,17 @@ La chaîne est identique pour toutes les images :
 3. **Agrandissement à 224 × 224 px**, avec le même facteur ×1,75 pour toutes les images.
 4. `keras.applications.resnet50.preprocess_input`.
 
-Il n'y a aucune recompression ni augmentation supplémentaire. Pourquoi : un redimensionnement différent selon la classe laisserait des traces que le modèle apprendrait à la place du vrai signal. Avec un crop natif puis un facteur unique, toutes les images subissent exactement la même transformation.
+Pas de recompression systématique. Pourquoi : un redimensionnement différent selon la classe laisserait des traces que le modèle apprendrait à la place du vrai signal. Avec un crop natif puis un facteur unique, toutes les images subissent exactement la même transformation.
+
+**Mise à jour après l'entraînement n° 1** ([rapport](rapport_train1.md)) : le modèle avait appris « net = réel ». On ajoute donc, à l'entraînement seulement et avant le crop, une **augmentation appliquée aux deux classes** : flou gaussien (probabilité 0,5, σ entre 0 et 2) et recompression JPEG (probabilité 0,5, qualité entre 50 et 100). Le test de perturbation est élargi à des dégradations plus fortes ou jamais vues : JPEG 40, flou σ = 2,5, réduction ×0,5 puis agrandissement.
 
 ## 5. Modèle et entraînement ([ticket](../.scratch/real-vs-generated/issues/07-backbones-finetuning.md))
 
 - **Backbone** : ResNet50 pré-entraîné sur ImageNet (`include_top=False`).
 - **Tête** : GlobalAveragePooling2D → Dropout(0,3) → Dense(1, sigmoïde). Perte : entropie croisée binaire.
-- **Phase 1** : backbone gelé. Adam, lr = 1e-3, ~5 epochs.
-- **Phase 2** : dégel de `conv5`. Adam, lr = 1e-5, ~10 epochs. Arrêt anticipé sur la perte de validation, avec restauration des meilleurs poids.
+- **Phase 1** : backbone gelé. Adam, lr = 1e-3, 10 epochs au maximum.
+- **Phase 2** : dégel de `conv5`. Adam, lr = 1e-5, 30 epochs au maximum.
+- **Arrêt anticipé sur les deux phases** (patience 4, restauration des meilleurs poids). Entraînement n° 1 : 5 + 10 epochs, arrêt anticipé en phase 2 seulement.
 - **Détails** :
   - BatchNorm en mode inférence (`training=False`) ;
   - batch de 64 ;
@@ -118,7 +121,7 @@ Sections, dans cet ordre :
 4. Les résultats des deux expériences.
 5. Les contrôles anti-raccourci.
 6. Grad-CAM.
-7. Les limites et les pistes : augmentation flou/JPEG, autres backbones, jeu de test au contenu varié.
+7. Les limites et les pistes : plusieurs crops par image en évaluation, autres backbones, jeu de test au contenu varié.
 
 Le détail des slides se fera une fois les résultats obtenus.
 

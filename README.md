@@ -104,14 +104,17 @@ La même chaîne s'applique à toutes les images, dans les deux expériences :
 3. **Agrandissement à 224 × 224 px**, avec le **même facteur ×1,75 pour toutes les images**. Aucune classe n'est donc déformée différemment des autres.
 4. **Normalisation** avec `keras.applications.resnet50.preprocess_input`.
 
-On ne recompresse rien (le dataset est déjà tout en JPEG qualité 96) et on n'ajoute aucune augmentation en dehors du crop aléatoire. Contrepartie acceptée : sur Midjourney (1024 px), le crop ne couvre qu'un petit morceau de l'image.
+On ne recompresse rien de façon systématique : le dataset est déjà tout en JPEG qualité 96. Contrepartie acceptée : sur Midjourney (1024 px), le crop ne couvre qu'un petit morceau de l'image.
+
+**Augmentation, ajoutée pour l'entraînement n° 2** (voir [docs/rapport_train1.md](docs/rapport_train1.md)) : à l'entraînement seulement, avant le crop, chaque image, réelle ou générée, reçoit au hasard un flou gaussien (probabilité 0,5, σ entre 0 et 2) et une recompression JPEG (probabilité 0,5, qualité entre 50 et 100). Le premier entraînement avait appris « net = réel » : ~40 % des vraies photos floutées ou recompressées étaient prises pour des images générées.
 
 ### Modèle et entraînement
 
 - **Backbone** : ResNet50 pré-entraîné sur ImageNet (`include_top=False`).
 - **Tête** : GlobalAveragePooling2D → Dropout(0,3) → Dense(1, sigmoïde). Perte : entropie croisée binaire.
-- **Phase 1**, backbone gelé : seule la tête apprend. Adam, lr = 1e-3, ~5 epochs.
-- **Phase 2**, dégel du dernier bloc (`conv5`) : Adam, lr = 1e-5, ~10 epochs. Arrêt anticipé sur la perte de validation, avec restauration des meilleurs poids.
+- **Phase 1**, backbone gelé : seule la tête apprend. Adam, lr = 1e-3, 10 epochs au maximum.
+- **Phase 2**, dégel du dernier bloc (`conv5`) : Adam, lr = 1e-5, 30 epochs au maximum.
+- **Arrêt anticipé sur les deux phases** : arrêt après 4 epochs sans amélioration de la perte de validation, avec restauration des poids de la meilleure epoch. (Entraînement n° 1 : 5 + 10 epochs, arrêt anticipé en phase 2 seulement.)
 - **Détails** :
   - BatchNorm en mode inférence (`training=False`) ;
   - batch de 64 ;
@@ -200,7 +203,7 @@ Le notebook est [notebooks/real_vs_generated.ipynb](notebooks/real_vs_generated.
 4. **Les résultats** des deux expériences : ce qu'on perd quand le générateur est inconnu.
 5. **Les contrôles anti-triche** : la preuve que le modèle ne triche pas.
 6. **Grad-CAM** : où le modèle regarde.
-7. **Les limites et les pistes** : augmentation flou/JPEG, autres backbones, jeu de test au contenu varié.
+7. **Les limites et les pistes** : plusieurs crops par image en évaluation, autres backbones, jeu de test au contenu varié.
 
 Le détail des slides se fera une fois les résultats obtenus.
 
