@@ -1,0 +1,60 @@
+# Carte : classification image réelle vs image générée
+
+Label: wayfinder:map
+
+## Destination
+
+Un document de cadrage où tous les choix sont verrouillés (dataset et sous-ensemble, prétraitement, backbones CNN et fine-tuning, protocole d'évaluation). Il doit être assez précis pour coder le notebook TensorFlow/Keras sans rien décider de plus, avec un coût de calcul qui tient sur Kaggle/Colab.
+
+## Notes
+
+- Domaine : projet de cours ESILV « Neural Networks & Deep Learning ». Livrables : un notebook, une présentation PowerPoint, un oral.
+- Tâche : classification binaire **image réelle** vs **image générée** (voir [GLOSSARY.md](../../GLOSSARY.md)). Le générateur d'origine n'a pas d'importance pour la décision.
+- Contraintes imposées : CNN + transfer learning obligatoires. On peut ajouter d'autres choses par-dessus, mais jamais remplacer le CNN (pas de ViT à la place).
+- Framework : TensorFlow / Keras (celui du cours).
+- Calcul : GPU gratuits Kaggle et Google Colab uniquement.
+- Évaluation déjà actée : split classique sur un mélange de générateurs, plus une évaluation sur 1 à 2 générateurs mis de côté (jamais vus à l'entraînement), pas davantage à cause du coût.
+- Prétraitement acté dans le principe : toutes les images à la même taille, seulement les pixels (aucune extension ni métadonnée exploitable).
+- Grad-CAM : à faire, en bonus.
+- Pas de code ni d'entraînement avant d'avoir atteint la destination : on économise le calcul.
+- Rédaction du notebook (préférence permanente) :
+  1. Le notebook s'exécute tel quel sur Colab ou Kaggle, de haut en bas, sans manipulation manuelle.
+  2. Ordre fixe en tête : d'abord toutes les installations de packages, puis tous les imports, puis tous les téléchargements (dataset, poids…).
+  3. Chaque section de code est précédée d'une cellule markdown avec un titre (ex. « Mise en place », « Entraînement »…).
+  4. Chaque fonction a une docstring.
+  5. Les lignes longues ou peu évidentes sont commentées.
+- Destination atteinte le 2026-11-23 : le document de cadrage est [docs/cadrage.md](../../docs/cadrage.md).
+- Skills à consulter : grilling + domain-modeling pour les tickets de discussion ; research pour les tickets de recherche.
+- Équipe et échéance : à compléter plus tard.
+
+## Decisions so far
+
+- [Augmentation, Grad-CAM, hyperparamètres, notebook et oral : quels choix ?](issues/10-brouillard-restant.md) : pas d'augmentation au-delà du crop aléatoire, pas de recherche d'hyperparamètres (2 entraînements en tout). Grad-CAM sur `conv5_block3_out` avec ~8 exemples. Notebook en 12 sections, fil conducteur de l'oral fixé.
+- [Quels backbones et quelle stratégie de fine-tuning ?](issues/07-backbones-finetuning.md) : ResNet50 seul. Tête GAP → Dropout 0,3 → sigmoïde. Phase 1 avec le backbone gelé (lr 1e-3), puis phase 2 avec dégel de `conv5` (lr 1e-5) et arrêt anticipé.
+- [Quel protocole d'évaluation ?](issues/08-protocole-evaluation.md) : split 70/15/15 stratifié, avec accuracy, F1, AUC, matrice de confusion et scores par générateur. Test des générateurs mis de côté face aux images réelles du test, et tableau comparant les deux expériences.
+
+- [Quel prétraitement exact ?](issues/06-pretraitement.md) : crop de 128 px à taille native (aléatoire en entraînement, centré en évaluation), agrandi ×1,75 en 224 px pour toutes les images, puis `resnet50.preprocess_input`. Pas de recompression. Contrôles : scores par générateur et test de perturbation.
+
+- [Quel dataset et quel sous-ensemble ? Quels générateurs mettre de côté ?](issues/05-choix-dataset.md) : unbiased-tiny-genimage, avec deux expériences sur le même modèle. L'expérience « tous générateurs » utilise les 7 générateurs (~833 images chacun). L'expérience « générateurs mis de côté » entraîne sur 5 générateurs (~1 165 images chacun) et teste sur Midjourney et BigGAN. Les deux sont équilibrées face aux 5 828 images réelles.
+
+- [Inspecter un échantillon des datasets candidats](issues/04-inspecter-echantillon.md) : unbiased-tiny-genimage est validé à l'œil (5 828 réelles, 7 × 2 500 générées, tout en JPEG, pas de split fourni) ; un biais de taille entre générateurs reste à traiter.
+
+- [Existe-t-il un dataset débiaisé au contenu plus varié que GenImage ?](issues/09-dataset-plus-varie.md) : non, rien de prêt à l'emploi. On garde unbiased-tiny-genimage pour l'entraînement ; Extended Synthbuster (photos RAISE variées contre FLUX et SD 3.5, 5,2 Go sur Kaggle) est le candidat comme jeu de test complémentaire.
+
+- [Quels backbones CNN Keras conviennent, et combien coûte leur fine-tuning ?](issues/03-backbones-keras.md) : candidats ResNet50, EfficientNet(V2)B0 et ConvNeXtTiny. Une epoch de 100k images prend environ 5 à 10 min sur un T4 (estimation). Kaggle offre 30 h GPU/semaine. Le prétraitement compte plus que le choix du backbone.
+
+- [Quels datasets image réelle vs image générée existent ?](issues/01-datasets-candidats.md) : GenImage (8 générateurs, ~500 Go) via un miroir Kaggle réduit, de préférence la version déjà débiaisée unbiased-tiny-genimage (2,5 Go). Synthbuster peut servir de test hors distribution ; les autres datasets sont trop gros ou difficiles d'accès.
+
+- [Quels biais de format piègent ces datasets, et quel prétraitement les neutralise ?](issues/02-biais-de-format.md) : GenImage oppose des JPEG réels à des PNG générés de taille fixe. Il faut recompresser les images générées en JPEG, aligner les tailles, cropper plutôt que resizer, puis vérifier qu'aucun raccourci ne subsiste.
+
+## Not yet specified
+
+- Équipe et échéance : à compléter par l'utilisateur ; ne bloque aucune décision.
+
+## Out of scope
+
+- Baseline CNN entraîné from scratch : l'apport du transfer learning se justifie à l'oral sans expérience dédiée.
+- Remplacer le CNN par un Vision Transformer ou CLIP : interdit par le sujet.
+- Deepfakes, images retouchées ou montages : seules les images entièrement générées comptent.
+- Art ou dessins faits à la main : la classe réelle ne contient que des photos.
+- Jeu de test complémentaire au contenu varié (Extended Synthbuster, voir [le ticket sur un dataset plus varié](issues/09-dataset-plus-varie.md)) : l'utilisateur préfère s'en tenir à GenImage seul.
