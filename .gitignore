@@ -224,3 +224,4 @@ __marimo__/
 
 # Modèles et historiques produits par le notebook
 outputs/
+result_and_model/
